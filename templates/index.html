@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Searcher</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <!-- FontAwesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Additional custom styles */
+        /* Adjust styles as needed */
+        .search-bar {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Image grid styles */
+        .image-tile {
+            padding: 5px;
+        }
+
+        .image-tile img {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Image Searcher</h5>
+                        <div class="input-group mb-3 search-bar">
+                            <input type="text" class="form-control" id="search" placeholder="Search for images..."
+                                aria-label="Search for images..." aria-describedby="search-button">
+                            <form action="/search_images" method="post">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="search-button"><i
+                                            class="fas fa-search"></i> Search</button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- Preloader -->
+                        <div class="preloader">
+                            <div class="d-flex justify-content-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Space for displaying search results or other content -->
+                        <div class="row" id="image-container">
+                            <!-- Images will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+    <script>
+        $(window).on('load', function () {
+            // Show preloader
+            $('.preloader').show();
+
+            // Make an API call
+            $.ajax({
+                url: '/get_images',
+                type: 'GET',
+                success: function (response) {
+                    response.forEach(function (image) {
+                        // Append image tiles to the image container
+                        $('#image-container').append(`
+    <div class="col-md-3 image-tile">
+        <img src="${image['Moved URL']}" alt="${image['Image URL']}" height="300">
+    </div>
+`);
+                        $('.preloader').hide();
+                    });
+
+                },
+                error: function (xhr, status, error) {
+                    // Handle any errors that occur during the AJAX request
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        $(document).ready(function () {
+
+            // Search button click event
+            $('#search-button').on('click', function (e) {
+                // Show preloader
+                e.preventDefault();
+                $('.preloader').show();
+
+                // Get the search query
+                var searchQuery = $('#search').val();
+
+                if (searchQuery != "") {
+                    // Make an API call
+                    $.ajax({
+                        url: '/search_images',
+                        type: 'POST',
+                        data: {
+                            search: searchQuery
+                        },
+                        success: function (response) {
+                            // Clear the image container
+                            $('#image-container').empty();
+
+                            response.forEach(function (image) {
+                                // Append image tiles to the image container
+                                $('#image-container').append(`
+        <div class="col-md-3 image-tile">
+            <img src="${image['Moved URL']}" alt="${image['Image URL']}" height="300">
+        </div>
+    `);
+                                $('.preloader').hide();
+                            });
+
+                        },
+                        error: function (error) {
+                            // Handle any errors that occur during the AJAX request
+                            console.error('Error:', error);
+                        }
+                    });
+                }
+            });
+
+        });
+
+
+
+    </script>
+</body>
+
+</html>
